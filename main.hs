@@ -33,7 +33,7 @@ getOpinions = do
       let csv = U.decode $ L.unpack rsp
       -- just explode on error here
       let Right decoded = parseCSV "/" csv
-      return [ Opinion { keyword = x , response = intercalate ", " xs } | (x:xs) <- decoded ]
+      return [ Opinion { keyword = x , response = intercalate ", " $ takeWhile (/= "") xs } | (x:xs) <- decoded ]
 
 regexWrapper x = ("(\\(|\\s|^)(" ++ x ++ ")(\\s|\\)|\\.|\\?|\\!|$)")
 regexMatch regex str = 
