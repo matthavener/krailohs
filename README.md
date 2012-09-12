@@ -3,4 +3,4 @@ krailohs
 
 krailos in haskell
 
-requires http-conduit, csv, regex-pcre
+requires simpleirc, stm, http-conduit, csv, regex-pcre

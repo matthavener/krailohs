@@ -92,4 +92,4 @@ main = do
     , cEvents   = events -- Events to bind
     }
 
-  connect network True True
+  connect network False True
