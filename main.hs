@@ -48,12 +48,13 @@ makeResponses opinions msg =
     let (_, _, _, (_:s:_)) = m :: (String, String, String, [String]), 
     m :: Bool ]
 
-coolDown = noTimeDiff { tdMin = 120 }
+coolDown = noTimeDiff { tdHour = 2 }
 removeEarly :: ClockTime -> LastFireds -> Opinions -> Opinions
+removeEarly now lastFireds opinions | trace ("removeEarly " ++ show now ++ " " ++ show lastFireds ++ " " ++ show opinions) False = undefined
 removeEarly now lastFireds opinions = 
     [ o | o <- opinions, 
       case Map.lookup o lastFireds of
-        Just t -> ( addToClockTime coolDown t ) > now
+        Just t -> ( addToClockTime coolDown t ) < now
         Nothing -> True ]
   
 onMessage :: (TVar Opinions) -> (TVar LastFireds) -> EventFunc
