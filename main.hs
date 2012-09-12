@@ -50,7 +50,7 @@ makeResponses opinions msg =
 
 coolDown = noTimeDiff { tdHour = 2 }
 removeEarly :: ClockTime -> LastFireds -> Opinions -> Opinions
-removeEarly now lastFireds opinions | trace ("removeEarly " ++ show now ++ " " ++ show lastFireds ++ " " ++ show opinions) False = undefined
+removeEarly now lastFireds opinions | trace ("removeEarly " ++ show now ++ " " ++ show lastFireds) False = undefined
 removeEarly now lastFireds opinions = 
     [ o | o <- opinions, 
       case Map.lookup o lastFireds of
