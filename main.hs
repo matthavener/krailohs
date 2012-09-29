@@ -1,11 +1,11 @@
-{-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction, NoMonoLocalBinds #-}
+{-# LANGUAGE NoMonomorphismRestriction, NoMonoLocalBinds #-}
 import Network.SimpleIRC
 import Data.Maybe
 import Data.Map hiding (filter, map)
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM
 import Network.HTTP.Conduit
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.UTF8 as B
 import qualified Data.ByteString.Lazy as L
 import qualified Codec.Binary.UTF8.String as U
 import Text.CSV
@@ -56,26 +56,29 @@ removeEarly now lastFireds opinions =
       case Map.lookup o lastFireds of
         Just t -> ( addToClockTime coolDown t ) < now
         Nothing -> True ]
+
+say :: MIrc -> B.ByteString -> String -> IO ()
+say s chan m = sendMsg s chan $ B.fromString m
   
 onMessage :: (TVar Opinions) -> (TVar LastFireds) -> EventFunc
 onMessage opinionsTVar lastFiredsTVar s m | trace ("onMessage " ++ show m) False = undefined
 onMessage opinionsTVar lastFiredsTVar s m
   | msg == "I CALL UPON THE POWER OF THE SPREADSHEET" = do
-    sendMsg s chan "loading hacking tools..."
+    say s chan "loading hacking tools..."
     -- todo spin off thread , delete old opinions from lastfireds
     opinions <- getOpinions
     atomically $ writeTVar opinionsTVar opinions
-    sendMsg s chan "loaded tools"
+    say s chan "loaded tools"
   | otherwise = do
       now <- getClockTime
       (lastFireds, opinions) <- atomically $ do { lf <- readTVar lastFiredsTVar; o <- readTVar opinionsTVar; return (lf, o); }
       let opinions' = removeEarly now lastFireds opinions
       let responses = makeResponses opinions' msg
-      sequence_ [sendMsg s chan $ B.pack r | (r, _) <- responses]
+      sequence_ [say s chan r | (r, _) <- responses]
       let lastFireds' = List.foldl (\lf o -> Map.insert o now lf) lastFireds $ List.map snd responses
       atomically $ writeTVar lastFiredsTVar lastFireds'
   where chan = fromJust $ mChan m
-        msg = B.unpack $ mMsg m
+        msg = B.toString $ mMsg m
 
 main = do
   opinions <- getOpinions
